@@ -220,3 +220,123 @@ fn ps512() {
     let validator = validator_for_signing_alg(SigningAlg::Ps512).unwrap();
     validator.validate(&signature, data, pub_key).unwrap();
 }
+
+#[test]
+#[cfg(all(feature = "openssl", not(feature = "rust_native_crypto")))]
+fn mldsa44() {
+    let private_key = include_bytes!("../../tests/fixtures/raw_signature/mldsa44.priv");
+
+    let signer = signer_from_private_key(private_key, SigningAlg::MlDsa44).unwrap();
+
+    assert_eq!(signer.alg(), SigningAlg::MlDsa44);
+
+    let data = b"some sample content to sign";
+    let signature = signer.sign(data).unwrap();
+
+    assert_eq!(signature.len(), 2420);
+    assert_eq!(signature.len(), signer.max_signature_size());
+
+    let pub_key = include_bytes!("../../tests/fixtures/raw_signature/mldsa44.pub_key");
+
+    let validator = validator_for_signing_alg(SigningAlg::MlDsa44).unwrap();
+    validator.validate(&signature, data, pub_key).unwrap();
+}
+
+#[test]
+#[cfg(all(feature = "openssl", not(feature = "rust_native_crypto")))]
+fn mldsa65() {
+    let private_key = include_bytes!("../../tests/fixtures/raw_signature/mldsa65.priv");
+
+    let signer = signer_from_private_key(private_key, SigningAlg::MlDsa65).unwrap();
+
+    assert_eq!(signer.alg(), SigningAlg::MlDsa65);
+
+    let data = b"some sample content to sign";
+    let signature = signer.sign(data).unwrap();
+
+    assert_eq!(signature.len(), 3309);
+    assert_eq!(signature.len(), signer.max_signature_size());
+
+    let pub_key = include_bytes!("../../tests/fixtures/raw_signature/mldsa65.pub_key");
+
+    let validator = validator_for_signing_alg(SigningAlg::MlDsa65).unwrap();
+    validator.validate(&signature, data, pub_key).unwrap();
+}
+
+#[test]
+#[cfg(all(feature = "openssl", not(feature = "rust_native_crypto")))]
+fn mldsa87() {
+    let private_key = include_bytes!("../../tests/fixtures/raw_signature/mldsa87.priv");
+
+    let signer = signer_from_private_key(private_key, SigningAlg::MlDsa87).unwrap();
+
+    assert_eq!(signer.alg(), SigningAlg::MlDsa87);
+
+    let data = b"some sample content to sign";
+    let signature = signer.sign(data).unwrap();
+
+    assert_eq!(signature.len(), 4627);
+    assert_eq!(signature.len(), signer.max_signature_size());
+
+    let pub_key = include_bytes!("../../tests/fixtures/raw_signature/mldsa87.pub_key");
+
+    let validator = validator_for_signing_alg(SigningAlg::MlDsa87).unwrap();
+    validator.validate(&signature, data, pub_key).unwrap();
+}
+
+#[test]
+#[cfg(all(feature = "openssl", not(feature = "rust_native_crypto")))]
+fn mldsa65_signatures_are_hedged() {
+    let private_key = include_bytes!("../../tests/fixtures/raw_signature/mldsa65.priv");
+    let signer = signer_from_private_key(private_key, SigningAlg::MlDsa65).unwrap();
+
+    let data = b"some sample content to sign";
+    let signature1 = signer.sign(data).unwrap();
+    let signature2 = signer.sign(data).unwrap();
+
+    assert_ne!(signature1, signature2);
+
+    let pub_key = include_bytes!("../../tests/fixtures/raw_signature/mldsa65.pub_key");
+    let validator = validator_for_signing_alg(SigningAlg::MlDsa65).unwrap();
+    validator.validate(&signature1, data, pub_key).unwrap();
+    validator.validate(&signature2, data, pub_key).unwrap();
+}
+
+#[test]
+#[cfg(all(feature = "openssl", not(feature = "rust_native_crypto")))]
+fn mldsa65_rejects_mldsa44_key() {
+    let private_key = include_bytes!("../../tests/fixtures/raw_signature/mldsa44.priv");
+
+    let Err(err) = signer_from_private_key(private_key, SigningAlg::MlDsa65) else {
+        panic!("expected error");
+    };
+
+    assert!(matches!(err, RawSignerError::InvalidSigningCredentials(_)));
+}
+
+#[test]
+#[cfg(all(feature = "openssl", not(feature = "rust_native_crypto")))]
+fn mldsa65_rejects_ed25519_key() {
+    let private_key = include_bytes!("../../tests/fixtures/raw_signature/ed25519.priv");
+
+    let Err(err) = signer_from_private_key(private_key, SigningAlg::MlDsa65) else {
+        panic!("expected error");
+    };
+
+    assert!(matches!(err, RawSignerError::InvalidSigningCredentials(_)));
+}
+
+#[test]
+#[cfg(feature = "rust_native_crypto")]
+fn mldsa_not_supported_by_rust_native() {
+    let private_key = include_bytes!("../../tests/fixtures/raw_signature/mldsa65.priv");
+
+    for alg in [SigningAlg::MlDsa44, SigningAlg::MlDsa65, SigningAlg::MlDsa87] {
+        let Err(err) = signer_from_private_key(private_key, alg) else {
+            panic!("expected error for {alg}");
+        };
+
+        assert!(matches!(err, RawSignerError::InternalError(_)));
+    }
+}
+

@@ -377,6 +377,176 @@ fn sha1() {
 }
 
 #[test]
+#[cfg(all(feature = "openssl", not(feature = "rust_native_crypto")))]
+fn mldsa44() {
+    let signature = include_bytes!("../../tests/fixtures/raw_signature/mldsa44.raw_sig");
+    let pub_key = include_bytes!("../../tests/fixtures/raw_signature/mldsa44.pub_key");
+
+    let validator = validator_for_signing_alg(SigningAlg::MlDsa44).unwrap();
+    validator.validate(signature, SAMPLE_DATA, pub_key).unwrap();
+}
+
+#[test]
+#[cfg(all(feature = "openssl", not(feature = "rust_native_crypto")))]
+fn mldsa65() {
+    let signature = include_bytes!("../../tests/fixtures/raw_signature/mldsa65.raw_sig");
+    let pub_key = include_bytes!("../../tests/fixtures/raw_signature/mldsa65.pub_key");
+
+    let validator = validator_for_signing_alg(SigningAlg::MlDsa65).unwrap();
+    validator.validate(signature, SAMPLE_DATA, pub_key).unwrap();
+}
+
+#[test]
+#[cfg(all(feature = "openssl", not(feature = "rust_native_crypto")))]
+fn mldsa87() {
+    let signature = include_bytes!("../../tests/fixtures/raw_signature/mldsa87.raw_sig");
+    let pub_key = include_bytes!("../../tests/fixtures/raw_signature/mldsa87.pub_key");
+
+    let validator = validator_for_signing_alg(SigningAlg::MlDsa87).unwrap();
+    validator.validate(signature, SAMPLE_DATA, pub_key).unwrap();
+}
+
+#[test]
+#[cfg(all(feature = "openssl", not(feature = "rust_native_crypto")))]
+fn mldsa65_bad_signature() {
+    let mut signature =
+        include_bytes!("../../tests/fixtures/raw_signature/mldsa65.raw_sig").to_vec();
+    assert_ne!(signature[10], 10);
+    signature[10] = 10;
+
+    let pub_key = include_bytes!("../../tests/fixtures/raw_signature/mldsa65.pub_key");
+    let validator = validator_for_signing_alg(SigningAlg::MlDsa65).unwrap();
+
+    assert_eq!(
+        validator
+            .validate(&signature, SAMPLE_DATA, pub_key)
+            .unwrap_err(),
+        RawSignatureValidationError::SignatureMismatch
+    );
+}
+
+#[test]
+#[cfg(all(feature = "openssl", not(feature = "rust_native_crypto")))]
+fn mldsa65_bad_data() {
+    let signature = include_bytes!("../../tests/fixtures/raw_signature/mldsa65.raw_sig");
+    let pub_key = include_bytes!("../../tests/fixtures/raw_signature/mldsa65.pub_key");
+
+    let mut data = SAMPLE_DATA.to_vec();
+    data[10] = 0;
+
+    let validator = validator_for_signing_alg(SigningAlg::MlDsa65).unwrap();
+
+    assert_eq!(
+        validator.validate(signature, &data, pub_key).unwrap_err(),
+        RawSignatureValidationError::SignatureMismatch
+    );
+}
+
+#[test]
+#[cfg(all(feature = "openssl", not(feature = "rust_native_crypto")))]
+fn mldsa65_truncated_signature() {
+    let signature = include_bytes!("../../tests/fixtures/raw_signature/mldsa65.raw_sig");
+    let pub_key = include_bytes!("../../tests/fixtures/raw_signature/mldsa65.pub_key");
+
+    let validator = validator_for_signing_alg(SigningAlg::MlDsa65).unwrap();
+
+    // ML-DSA signatures have a fixed size, so any other length is rejected
+    // before OpenSSL is called.
+    assert_eq!(
+        validator
+            .validate(&signature[..signature.len() - 1], SAMPLE_DATA, pub_key)
+            .unwrap_err(),
+        RawSignatureValidationError::InvalidSignature
+    );
+}
+
+#[test]
+#[cfg(all(feature = "openssl", not(feature = "rust_native_crypto")))]
+fn mldsa44_signature_labelled_as_mldsa65() {
+    let signature = include_bytes!("../../tests/fixtures/raw_signature/mldsa44.raw_sig");
+    let pub_key = include_bytes!("../../tests/fixtures/raw_signature/mldsa44.pub_key");
+
+    let validator = validator_for_signing_alg(SigningAlg::MlDsa65).unwrap();
+
+    assert_eq!(
+        validator
+            .validate(signature, SAMPLE_DATA, pub_key)
+            .unwrap_err(),
+        RawSignatureValidationError::InvalidSignature
+    );
+}
+
+#[test]
+#[cfg(all(feature = "openssl", not(feature = "rust_native_crypto")))]
+fn mldsa65_wrong_parameter_set_key() {
+    let signature = include_bytes!("../../tests/fixtures/raw_signature/mldsa65.raw_sig");
+    let pub_key = include_bytes!("../../tests/fixtures/raw_signature/mldsa44.pub_key");
+
+    let validator = validator_for_signing_alg(SigningAlg::MlDsa65).unwrap();
+
+    assert_eq!(
+        validator
+            .validate(signature, SAMPLE_DATA, pub_key)
+            .unwrap_err(),
+        RawSignatureValidationError::InvalidPublicKey
+    );
+}
+
+#[test]
+#[cfg(all(feature = "openssl", not(feature = "rust_native_crypto")))]
+fn mldsa65_ed25519_key() {
+    let signature = include_bytes!("../../tests/fixtures/raw_signature/mldsa65.raw_sig");
+    let pub_key = include_bytes!("../../tests/fixtures/raw_signature/ed25519.pub_key");
+
+    let validator = validator_for_signing_alg(SigningAlg::MlDsa65).unwrap();
+
+    assert_eq!(
+        validator
+            .validate(signature, SAMPLE_DATA, pub_key)
+            .unwrap_err(),
+        RawSignatureValidationError::InvalidPublicKey
+    );
+}
+
+#[test]
+#[cfg(all(feature = "openssl", not(feature = "rust_native_crypto")))]
+fn mldsa_by_sig_alg_oid() {
+    use crate::oids::{ML_DSA_44_OID, ML_DSA_65_OID, ML_DSA_87_OID};
+
+    // ML-DSA is a pure signature: the OID names the parameter set and the hash
+    // OID is ignored.
+    for (oid, signature, pub_key) in [
+        (
+            ML_DSA_44_OID,
+            &include_bytes!("../../tests/fixtures/raw_signature/mldsa44.raw_sig")[..],
+            &include_bytes!("../../tests/fixtures/raw_signature/mldsa44.pub_key")[..],
+        ),
+        (
+            ML_DSA_65_OID,
+            &include_bytes!("../../tests/fixtures/raw_signature/mldsa65.raw_sig")[..],
+            &include_bytes!("../../tests/fixtures/raw_signature/mldsa65.pub_key")[..],
+        ),
+        (
+            ML_DSA_87_OID,
+            &include_bytes!("../../tests/fixtures/raw_signature/mldsa87.raw_sig")[..],
+            &include_bytes!("../../tests/fixtures/raw_signature/mldsa87.pub_key")[..],
+        ),
+    ] {
+        let validator =
+            validator_for_sig_and_hash_algs(&Oid::new(oid.as_bytes()), &SHA512_OID).unwrap();
+        validator.validate(signature, SAMPLE_DATA, pub_key).unwrap();
+    }
+}
+
+#[test]
+#[cfg(feature = "rust_native_crypto")]
+fn mldsa_not_supported_by_rust_native() {
+    for alg in [SigningAlg::MlDsa44, SigningAlg::MlDsa65, SigningAlg::MlDsa87] {
+        assert!(validator_for_signing_alg(alg).is_none());
+    }
+}
+
+#[test]
 #[cfg_attr(
     all(target_arch = "wasm32", not(target_os = "wasi")),
     wasm_bindgen_test
@@ -387,12 +557,16 @@ fn test_get_by_sig_and_alg() {
     // Bind each OID const to a local so the borrow in `as_bytes()` outlives the
     // calls below.
     let (rsa, rsa_pss, ec, ed) = (RSA_OID, RSA_PSS_OID, EC_PUBLICKEY_OID, ED25519_OID);
+    let (ml_dsa_44_c, ml_dsa_65_c, ml_dsa_87_c) = (ML_DSA_44_OID, ML_DSA_65_OID, ML_DSA_87_OID);
     let (sha256_c, sha384_c, sha512_c) = (SHA256_OID, SHA384_OID, SHA512_OID);
 
     let rsa_oid = Oid::new(rsa.as_bytes());
     let rsa_pss_oid = Oid::new(rsa_pss.as_bytes());
     let ec_public_key_oid = Oid::new(ec.as_bytes());
     let ed25519_oid = Oid::new(ed.as_bytes());
+    let ml_dsa_44_oid = Oid::new(ml_dsa_44_c.as_bytes());
+    let ml_dsa_65_oid = Oid::new(ml_dsa_65_c.as_bytes());
+    let ml_dsa_87_oid = Oid::new(ml_dsa_87_c.as_bytes());
     let sha256 = Oid::new(sha256_c.as_bytes());
     let sha384 = Oid::new(sha384_c.as_bytes());
     let sha512 = Oid::new(sha512_c.as_bytes());
@@ -404,6 +578,14 @@ fn test_get_by_sig_and_alg() {
     let available = true;
     #[cfg(not(any(feature = "rust_native_crypto", feature = "openssl")))]
     let available = false;
+
+    // ML-DSA is only implemented by the OpenSSL backend, and only dispatched to
+    // when `rust_native_crypto` is *not* also enabled (rust-native wins under
+    // feature unification — see `crate::validator`).
+    #[cfg(all(feature = "openssl", not(feature = "rust_native_crypto")))]
+    let ml_dsa_available = true;
+    #[cfg(not(all(feature = "openssl", not(feature = "rust_native_crypto"))))]
+    let ml_dsa_available = false;
 
     assert_eq!(
         validator_for_sig_and_hash_algs(&rsa_oid, &sha256).is_some(),
@@ -448,6 +630,23 @@ fn test_get_by_sig_and_alg() {
         validator_for_sig_and_hash_algs(&ed25519_oid, &sha512).is_some(),
         available
     );
+
+    // ML-DSA is a pure signature: the OID names the parameter set and the hash
+    // OID is ignored, so every hash resolves.
+    for hash in [&sha256, &sha384, &sha512] {
+        assert_eq!(
+            validator_for_sig_and_hash_algs(&ml_dsa_44_oid, hash).is_some(),
+            ml_dsa_available
+        );
+        assert_eq!(
+            validator_for_sig_and_hash_algs(&ml_dsa_65_oid, hash).is_some(),
+            ml_dsa_available
+        );
+        assert_eq!(
+            validator_for_sig_and_hash_algs(&ml_dsa_87_oid, hash).is_some(),
+            ml_dsa_available
+        );
+    }
 
     // An unknown OID never resolves, regardless of the backend.
     let test_fail = Oid::new(&[0, 0, 0, 0]);
