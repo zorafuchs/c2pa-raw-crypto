@@ -28,6 +28,9 @@ pub(crate) use rsa_legacy_validator::RsaLegacyValidator;
 mod rsa_validator;
 pub(crate) use rsa_validator::RsaValidator;
 
+mod mldsa_validator;
+pub(crate) use mldsa_validator:MlDsaValidator;
+
 /// Returns a validator for the given signing algorithm.
 pub(crate) fn validator_for_signing_alg(alg: SigningAlg) -> Option<Box<dyn RawSignatureValidator>> {
     match alg {
@@ -38,6 +41,10 @@ pub(crate) fn validator_for_signing_alg(alg: SigningAlg) -> Option<Box<dyn RawSi
         SigningAlg::Ps256 => Some(Box::new(RsaValidator::Ps256)),
         SigningAlg::Ps384 => Some(Box::new(RsaValidator::Ps384)),
         SigningAlg::Ps512 => Some(Box::new(RsaValidator::Ps512)),
+        SigningAlg::MlDsa44 => Some(Box::new(MlDsaValidator::MlDsa44)),
+        SigningAlg::MlDsa65 => Some(Box::new(MlDsaValidator::MlDsa65)),
+        SigningAlg::MlDsa87 => Some(Box::new(MlDsaValidator::MlDsa87)),
+
     }
 }
 
@@ -67,6 +74,15 @@ pub(crate) fn validator_for_sig_and_hash_algs(
     }
     if sig_alg == ED25519_OID.as_bytes() {
         return Some(Box::new(Ed25519Validator {}));
+    }
+    if sig_alg == ML_DSA_44_OID.as_bytes() {
+        return Some(Box::new(MlDsaValidator::MlDsa44 {}));
+    }
+    if sig_alg == ML_DSA_65_OID.as_bytes() {
+        return Some(Box::new(MlDsaValidator::MlDsa65 {}));
+    }
+    if sig_alg == ML_DSA_87_OID.as_bytes() {
+        return Some(Box::new(MlDsaValidator::MlDsa87 {}));
     }
 
     // Test for public key algorithms next.
@@ -104,6 +120,15 @@ pub(crate) fn validator_for_sig_and_hash_algs(
         }
     }
 
+    // ML-DSA (FIPS 204) is a pure signature: the OID names the parameter set and there is no separate hash algorithm, so hash_alg is ignored.
+    if sig_alg == ML_DSA_44_OID.as_bytes() {
+        return Some(Box::new(MlDsaValidator::MlDsa44));
+    } else if sig_alg == ML_DSA_65_OID.as_bytes() {
+        return Some(Box::new(MlDsaValidator::MlDsa65));
+    } else if sig_alg == ML_DSA_87_OID.as_bytes() {
+        return Some(Box::new(MlDsaValidator::MlDsa87));
+    }
+
     None
 }
 
@@ -126,6 +151,9 @@ mod tests {
         assert!(resolves(&SHA384_WITH_RSAENCRYPTION_OID));
         assert!(resolves(&SHA512_WITH_RSAENCRYPTION_OID));
         assert!(resolves(&ED25519_OID));
+        assert!(resolves(&ML_DSA_44_OID));
+        assert!(resolves(&ML_DSA_65_OID));
+        assert!(resolves(&ML_DSA_87_OID));
 
         // An unrecognized signature/hash OID pair resolves to nothing.
         assert!(super::validator_for_sig_and_hash_algs(&[0, 0, 0, 0], &[0, 0]).is_none());

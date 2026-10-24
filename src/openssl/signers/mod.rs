@@ -19,6 +19,7 @@ use crate::{RawSigner, RawSignerError, SigningAlg};
 mod ecdsa_signer;
 mod ed25519_signer;
 mod rsa_signer;
+mod mldsa_signer;
 
 /// Returns a built-in [`RawSigner`] instance using using OpenSSL's
 /// implementation of each of the supported encryption algorithms.
@@ -40,5 +41,9 @@ pub(crate) fn signer_from_private_key(
         SigningAlg::Ps256 | SigningAlg::Ps384 | SigningAlg::Ps512 => Ok(Box::new(
             rsa_signer::RsaSigner::from_private_key(private_key, alg)?,
         )),
+
+        SigningAlg:MlDsa44 | SigningAlg::MlDsa | SigningAlg:: MlDsa => Ok(Box:: new(
+            mldsa_signer::MlDsaSigner::from_private_key(private_key, alg)?
+        ))
     }
 }

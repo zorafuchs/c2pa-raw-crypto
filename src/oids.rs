@@ -85,3 +85,16 @@ pub const PRIME256V1_OID: Oid<'static> =
 
 /// `id-Ed25519` (1.3.101.112).
 pub const ED25519_OID: Oid<'static> = Oid::new(&[0x2b, 0x65, 0x70]);
+
+/// `id-ml-dsa-44` (2.16.840.1.101.3.4.3.17), FIPS 204.
+pub const ML_DSA_44_OID: Oid<'static> =
+    Oid::new(&[0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x03, 0x11]);
+
+/// `id-ml-dsa-65` (2.16.840.1.101.3.4.3.18), FIPS 204.
+pub const ML_DSA_65_OID: Oid<'static> =
+    Oid::new(&[0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x03, 0x12]);
+
+/// `id-ml-dsa-87` (2.16.840.1.101.3.4.3.19), FIPS 204.
+pub const ML_DSA_87_OID: Oid<'static> =
+    Oid::new(&[0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x03, 0x13]);
+
