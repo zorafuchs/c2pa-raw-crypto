@@ -42,7 +42,7 @@ pub(crate) fn signer_from_private_key(
             rsa_signer::RsaSigner::from_private_key(private_key, alg)?,
         )),
 
-        SigningAlg:MlDsa44 | SigningAlg::MlDsa | SigningAlg:: MlDsa => Ok(Box:: new(
+        SigningAlg::MlDsa44 | SigningAlg::MlDsa65 | SigningAlg::MlDsa87 => Ok(Box:: new(
             mldsa_signer::MlDsaSigner::from_private_key(private_key, alg)?
         ))
     }
