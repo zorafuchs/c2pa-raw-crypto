@@ -29,7 +29,7 @@ mod rsa_validator;
 pub(crate) use rsa_validator::RsaValidator;
 
 mod mldsa_validator;
-pub(crate) use mldsa_validator:MlDsaValidator;
+pub(crate) use mldsa_validator::MlDsaValidator;
 
 /// Returns a validator for the given signing algorithm.
 pub(crate) fn validator_for_signing_alg(alg::SigningAlg) -> Option<Box<dyn RawSignatureValidator>> {
@@ -44,7 +44,6 @@ pub(crate) fn validator_for_signing_alg(alg::SigningAlg) -> Option<Box<dyn RawSi
         SigningAlg::MlDsa44 => Some(Box::new(MlDsaValidator::MlDsa44)),
         SigningAlg::MlDsa65 => Some(Box::new(MlDsaValidator::MlDsa65)),
         SigningAlg::MlDsa87 => Some(Box::new(MlDsaValidator::MlDsa87)),
-
     }
 }
 
