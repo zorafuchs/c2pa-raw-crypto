@@ -32,7 +32,7 @@ mod mldsa_validator;
 pub(crate) use mldsa_validator::MlDsaValidator;
 
 /// Returns a validator for the given signing algorithm.
-pub(crate) fn validator_for_signing_alg(alg::SigningAlg) -> Option<Box<dyn RawSignatureValidator>> {
+pub(crate) fn validator_for_signing_alg(alg: SigningAlg) -> Option<Box<dyn RawSignatureValidator>> {
     match alg {
         SigningAlg::Es256 => Some(Box::new(EcdsaValidator::Es256)),
         SigningAlg::Es384 => Some(Box::new(EcdsaValidator::Es384)),
