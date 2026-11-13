@@ -47,6 +47,15 @@ pub enum SigningAlg {
 
     /// Edwards-Curve DSA (Ed25519 instance only)
     Ed25519,
+
+    /// Module-Lattice-Based DSA, ML-DSA-44 parameter set (FIPS 204, NIST security category 2)
+    MlDsa44,
+
+    /// Module-Lattice-Based DSA, ML-DSA-65 parameter set (FIPS 204, NIST security category 3)
+    MlDsa65,
+
+    /// Module-Lattice-Based DSA, ML-DSA-87 parameter set (FIPS 204, NIST security category 5)
+    MlDsa87,
 }
 
 impl FromStr for SigningAlg {
@@ -61,6 +70,9 @@ impl FromStr for SigningAlg {
             "ps384" => Ok(Self::Ps384),
             "ps512" => Ok(Self::Ps512),
             "ed25519" => Ok(Self::Ed25519),
+            "mldsa44" => Ok(Self::MlDsa44),
+            "mldsa65" => Ok(Self::MlDsa65),
+            "mldsa87" => Ok(Self::MlDsa87),
             _ => Err(UnknownAlgorithmError(alg.to_owned())),
         }
     }
@@ -91,6 +103,9 @@ impl fmt::Display for SigningAlg {
                 Self::Ps384 => "ps384",
                 Self::Ps512 => "ps512",
                 Self::Ed25519 => "ed25519",
+                Self::MlDsa44 => "mldsa44",
+                Self::MlDsa65 => "mldsa65",
+                Self::MlDsa87 => "mldsa87",
             }
         )
     }
@@ -101,7 +116,7 @@ impl fmt::Display for SigningAlg {
 /// if the algorithm string is unrecognized.
 ///
 /// The string must be one of "es256", "es384", "es512", "ps256", "ps384",
-/// "ps512", or "ed25519".
+/// "ps512", "ed25519", "mldsa44", "mldsa65", or "mldsa87"
 pub struct UnknownAlgorithmError(pub String);
 
 impl fmt::Display for UnknownAlgorithmError {
@@ -136,6 +151,9 @@ mod tests {
         assert_eq!("ps384".parse(), Ok(SigningAlg::Ps384));
         assert_eq!("ps512".parse(), Ok(SigningAlg::Ps512));
         assert_eq!("ed25519".parse(), Ok(SigningAlg::Ed25519));
+        assert_eq!("mldsa44".parse(), Ok(SigningAlg::MlDsa44));
+        assert_eq!("mldsa65".parse(), Ok(SigningAlg::MlDsa65));
+        assert_eq!("mldsa87".parse(), Ok(SigningAlg::MlDsa87));
 
         let r: Result<SigningAlg, UnknownAlgorithmError> = "bogus".parse();
         assert_eq!(r, Err(UnknownAlgorithmError("bogus".to_string())));
@@ -154,6 +172,9 @@ mod tests {
         assert_eq!(format!("{}", SigningAlg::Ps384), "ps384");
         assert_eq!(format!("{}", SigningAlg::Ps512), "ps512");
         assert_eq!(format!("{}", SigningAlg::Ed25519), "ed25519");
+        assert_eq!(format!("{}", SigningAlg::MlDsa44), "mldsa44");
+        assert_eq!(format!("{}", SigningAlg::MlDsa65), "mldsa65");
+        assert_eq!(format!("{}", SigningAlg::MlDsa87), "mldsa87");
     }
 
     #[test]

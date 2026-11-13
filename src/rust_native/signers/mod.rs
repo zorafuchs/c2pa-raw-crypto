@@ -39,6 +39,10 @@ pub(crate) fn signer_from_private_key(
         SigningAlg::Es256 | SigningAlg::Es384 | SigningAlg::Es512 => Ok(Box::new(
             ecdsa_signer::EcdsaSigner::from_private_key(private_key, alg)?,
         )),
+
+        SigningAlg::MlDsa44 | SigningAlg::MlDsa65 | SigningAlg::MlDsa87 => {
+            Err(RawSignerError::InternalError(format!("unsupported signing algorithm {alg}")
+        ))},
     }
 }
 

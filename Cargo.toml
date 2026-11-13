@@ -8,7 +8,7 @@ homepage = "https://contentauthenticity.org"
 license = "MIT OR Apache-2.0"
 name = "c2pa_raw_crypto"
 readme = "README.md"
-repository = "https://github.com/contentauth/c2pa_raw_crypto"
+repository = "https://github.com/zorafuchs/c2pa-raw-crypto/"
 rust-version = "1.88.0"
 version = "0.1.2"
 
