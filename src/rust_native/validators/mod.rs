@@ -38,6 +38,7 @@ pub(crate) fn validator_for_signing_alg(alg: SigningAlg) -> Option<Box<dyn RawSi
         SigningAlg::Es256 => Some(Box::new(EcdsaValidator::Es256)),
         SigningAlg::Es384 => Some(Box::new(EcdsaValidator::Es384)),
         SigningAlg::Es512 => Some(Box::new(EcdsaValidator::Es512)),
+        SigningAlg::MlDsa44 | SigningAlg::MlDsa65 | SigningAlg::MlDsa87 => None,
     }
 }
 
